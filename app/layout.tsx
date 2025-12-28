@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sakay Admin Dashboard",
+  title: {
+    default: "Sakay Admin Dashboard",
+    template: "%s | Sakay Admin",
+  },
   description: "Admin dashboard for Sakay ride-hailing platform",
   icons: {
     icon: "/icon_sakay_logo.png",
