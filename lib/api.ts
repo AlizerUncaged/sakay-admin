@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5097';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://sakay.to';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -154,6 +154,49 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify({ isActive }),
     });
+  }
+
+  async getUser(userId: string) {
+    return this.request<User>(`/api/admin/users/${userId}`);
+  }
+
+  async getDriver(driverId: string) {
+    // Get driver with motorcycle info
+    const [userResponse, motorcyclesResponse] = await Promise.all([
+      this.request<User>(`/api/admin/users/${driverId}`),
+      this.getMotorcycles(1, 100),
+    ]);
+
+    if (userResponse.success && userResponse.data) {
+      const motorcycle = motorcyclesResponse.data?.find(m => m.ownerId === driverId);
+      return {
+        ...userResponse,
+        data: {
+          ...userResponse.data,
+          motorcycle,
+        },
+      };
+    }
+    return userResponse;
+  }
+
+  async registerDriver(formData: FormData) {
+    const token = this.getToken();
+    const response = await fetch(`${API_BASE_URL}/api/admin/drivers/register`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        errors: data.errors || ['Registration failed'],
+      };
+    }
+    return data;
   }
 
   // ============================================

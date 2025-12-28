@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -64,8 +65,14 @@ export default function Sidebar() {
           {/* Logo */}
           <div className="p-6 border-b border-[var(--border-color)]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[var(--sakay-yellow)] flex items-center justify-center">
-                <Bike size={24} className="text-[var(--dark-background)]" />
+              <div className="w-10 h-10 rounded-xl overflow-hidden bg-[var(--sakay-yellow)] flex items-center justify-center">
+                <Image
+                  src="/icon_sakay_logo.png"
+                  alt="Sakay Logo"
+                  width={40}
+                  height={40}
+                  className="object-cover"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-[var(--primary-text)]">Sakay</h1>

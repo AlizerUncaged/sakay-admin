@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sakay Admin Dashboard",
   description: "Admin dashboard for Sakay ride-hailing platform",
+  icons: {
+    icon: "/icon_sakay_logo.png",
+    shortcut: "/icon_sakay_logo.png",
+    apple: "/icon_sakay_logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -25,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/icon_sakay_logo.png" type="image/png" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

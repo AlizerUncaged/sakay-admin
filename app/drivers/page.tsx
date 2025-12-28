@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Star, Phone, CheckCircle, XCircle, Eye, Clock, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Search, Star, Phone, CheckCircle, XCircle, Eye, Loader2, AlertCircle, RefreshCw, UserPlus, Settings, ExternalLink } from 'lucide-react';
 import { api, User, Motorcycle } from '@/lib/api';
-import { DriverDetailModal } from '@/components/modals';
+import { DriverDetailModal, AddDriverModal } from '@/components/modals';
 
 interface DriverWithVehicle extends User {
   motorcycle?: Motorcycle;
 }
 
 export default function DriversPage() {
+  const router = useRouter();
   const [drivers, setDrivers] = useState<DriverWithVehicle[]>([]);
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,7 @@ export default function DriversPage() {
   const [filterStatus, setFilterStatus] = useState<'All' | 'Active' | 'Inactive'>('All');
   const [selectedDriver, setSelectedDriver] = useState<DriverWithVehicle | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -128,8 +131,10 @@ export default function DriversPage() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-4 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] font-semibold rounded-xl hover:bg-[var(--bright-yellow)] transition-colors"
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] font-semibold rounded-xl hover:bg-[var(--bright-yellow)] transition-colors"
           >
+            <UserPlus size={18} />
             Add Driver
           </motion.button>
         </div>
@@ -294,8 +299,10 @@ export default function DriversPage() {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex-1 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-medium"
+                      onClick={() => router.push(`/drivers/${driver.id}`)}
+                      className="flex-1 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-medium flex items-center justify-center gap-2"
                     >
+                      <Settings size={16} />
                       Manage
                     </motion.button>
                   </div>
@@ -315,6 +322,16 @@ export default function DriversPage() {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         driver={selectedDriver}
+      />
+
+      {/* Add Driver Modal */}
+      <AddDriverModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          fetchData();
+          setIsAddModalOpen(false);
+        }}
       />
     </div>
   );

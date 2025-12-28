@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Mail, Phone, Star, CheckCircle, XCircle, MoreVertical, Loader2, AlertCircle, RefreshCw, UserX, UserCheck, Eye } from 'lucide-react';
+import { Search, Mail, Phone, Star, CheckCircle, XCircle, MoreVertical, Loader2, AlertCircle, RefreshCw, UserX, UserCheck, Eye, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api, User } from '@/lib/api';
 import { UserDetailModal } from '@/components/modals';
 
@@ -17,6 +18,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export default function UsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -314,6 +316,16 @@ export default function UsersPage() {
                                   className="absolute right-0 top-full mt-1 w-48 bg-[var(--card-background)] border border-[var(--border-color)] rounded-xl shadow-lg z-10 overflow-hidden"
                                 >
                                   <button
+                                    onClick={() => {
+                                      router.push(`/users/${user.id}`);
+                                      setActionMenuOpen(null);
+                                    }}
+                                    className="w-full px-4 py-3 text-left text-sm hover:bg-[var(--elevated-surface)] transition-colors flex items-center gap-2 text-[var(--primary-text)]"
+                                  >
+                                    <ExternalLink size={16} />
+                                    <span>View Full Profile</span>
+                                  </button>
+                                  <button
                                     onClick={() => handleToggleUserStatus(user)}
                                     className="w-full px-4 py-3 text-left text-sm hover:bg-[var(--elevated-surface)] transition-colors flex items-center gap-2"
                                   >
@@ -366,8 +378,9 @@ export default function UsersPage() {
             whileTap={{ scale: 0.95 }}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-[var(--elevated-surface)] text-[var(--secondary-text)] rounded-xl hover:bg-[var(--input-background)] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-4 py-2 bg-[var(--elevated-surface)] text-[var(--secondary-text)] rounded-xl hover:bg-[var(--input-background)] transition-colors disabled:opacity-50"
           >
+            <ChevronLeft size={16} />
             Previous
           </motion.button>
           <span className="px-4 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl font-medium">
@@ -378,9 +391,10 @@ export default function UsersPage() {
             whileTap={{ scale: 0.95 }}
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage >= totalPages}
-            className="px-4 py-2 bg-[var(--elevated-surface)] text-[var(--secondary-text)] rounded-xl hover:bg-[var(--input-background)] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-4 py-2 bg-[var(--elevated-surface)] text-[var(--secondary-text)] rounded-xl hover:bg-[var(--input-background)] transition-colors disabled:opacity-50"
           >
             Next
+            <ChevronRight size={16} />
           </motion.button>
         </div>
       </motion.div>
