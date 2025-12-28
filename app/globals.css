@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  /* Sakay Brand Colors */
+  /* Sakay Brand Colors - Aligned with mobile apps */
   --sakay-yellow: #FFD23F;
   --bright-yellow: #FFED4A;
   --amber-gold: #FFC107;
 
-  /* Dark Theme */
+  /* Dark Theme - Aligned with mobile apps (Theme.js) */
   --dark-background: #1A1A1A;
-  --card-background: #2A2A2A;
-  --elevated-surface: #343434;
-  --input-background: #3A3A3A;
-  --border-color: #4A4A4A;
+  --card-background: #1F1F1F;
+  --elevated-surface: #282828;
+  --input-background: #2F2F2F;
+  --border-color: #3A3A3A;
 
-  /* Text Colors */
+  /* Text Colors - Same as mobile apps */
   --primary-text: #F5F5F5;
   --secondary-text: #D0D0D0;
   --tertiary-text: #A0A0A0;
   --placeholder-text: #808080;
 
-  /* Accent Colors */
+  /* Accent Colors - Same as mobile apps */
   --success-green: #4CAF50;
   --error-red: #F44336;
   --info-blue: #2196F3;

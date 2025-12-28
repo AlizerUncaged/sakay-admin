@@ -211,7 +211,7 @@ export default function SettingsPage() {
         </div>
       </motion.div>
 
-      {/* Pricing Settings */}
+      {/* Fare Rates by Service Type */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -222,44 +222,145 @@ export default function SettingsPage() {
           <div className="p-2 rounded-xl bg-[var(--sakay-yellow)]/20">
             <DollarSign size={20} className="text-[var(--sakay-yellow)]" />
           </div>
-          <h2 className="text-lg font-semibold text-[var(--primary-text)]">Pricing Settings</h2>
+          <h2 className="text-lg font-semibold text-[var(--primary-text)]">Fare Rates</h2>
+          <span className="text-xs px-2 py-1 bg-[var(--info-blue)]/20 text-[var(--info-blue)] rounded-full">
+            Used by mobile apps
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-[var(--secondary-text)] mb-2">
-              Currency
-            </label>
-            <select
-              value={getValue('currency', 'PHP')}
-              onChange={(e) => handleChange('currency', e.target.value)}
-              className="w-full px-4 py-3 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
-            >
-              <option value="PHP">PHP - Philippine Peso</option>
-              <option value="USD">USD - US Dollar</option>
-            </select>
+        {/* Ride Service */}
+        <div className="mb-6 p-4 bg-[var(--elevated-surface)] rounded-xl">
+          <h3 className="text-sm font-semibold text-[var(--sakay-yellow)] mb-4">🏍️ Ride Service</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('ride_baseFare', '40')}
+                onChange={(e) => handleChange('ride_baseFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
+              <input
+                type="number"
+                value={getValue('ride_perKm', '12')}
+                onChange={(e) => handleChange('ride_perKm', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('ride_minFare', '50')}
+                onChange={(e) => handleChange('ride_minFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--secondary-text)] mb-2">
-              Base Price
-            </label>
-            <input
-              type="number"
-              value={getValue('base_price', '50')}
-              onChange={(e) => handleChange('base_price', e.target.value)}
-              className="w-full px-4 py-3 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
-            />
+        </div>
+
+        {/* Delivery Service */}
+        <div className="mb-6 p-4 bg-[var(--elevated-surface)] rounded-xl">
+          <h3 className="text-sm font-semibold text-[var(--info-blue)] mb-4">📦 Delivery Service</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('delivery_baseFare', '45')}
+                onChange={(e) => handleChange('delivery_baseFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
+              <input
+                type="number"
+                value={getValue('delivery_perKm', '15')}
+                onChange={(e) => handleChange('delivery_perKm', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('delivery_minFare', '60')}
+                onChange={(e) => handleChange('delivery_minFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--secondary-text)] mb-2">
-              Price per KM
-            </label>
-            <input
-              type="number"
-              value={getValue('price_per_km', '15')}
-              onChange={(e) => handleChange('price_per_km', e.target.value)}
-              className="w-full px-4 py-3 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
-            />
+        </div>
+
+        {/* Cargo Service */}
+        <div className="mb-6 p-4 bg-[var(--elevated-surface)] rounded-xl">
+          <h3 className="text-sm font-semibold text-[var(--success-green)] mb-4">🚚 Cargo Service</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('cargo_baseFare', '80')}
+                onChange={(e) => handleChange('cargo_baseFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
+              <input
+                type="number"
+                value={getValue('cargo_perKm', '20')}
+                onChange={(e) => handleChange('cargo_perKm', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('cargo_minFare', '100')}
+                onChange={(e) => handleChange('cargo_minFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Express Service */}
+        <div className="p-4 bg-[var(--elevated-surface)] rounded-xl">
+          <h3 className="text-sm font-semibold text-[var(--warning-orange)] mb-4">⚡ Express Service</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('express_baseFare', '60')}
+                onChange={(e) => handleChange('express_baseFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
+              <input
+                type="number"
+                value={getValue('express_perKm', '18')}
+                onChange={(e) => handleChange('express_perKm', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
+              <input
+                type="number"
+                value={getValue('express_minFare', '80')}
+                onChange={(e) => handleChange('express_minFare', e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
+              />
+            </div>
           </div>
         </div>
       </motion.div>

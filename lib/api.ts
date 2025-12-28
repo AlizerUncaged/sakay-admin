@@ -119,9 +119,14 @@ class ApiClient {
   }
 
   async updateSetting(key: string, value: string, description?: string, category?: string) {
+    // Auto-detect category for fare rate settings
+    const fareRateKeys = ['ride_', 'delivery_', 'cargo_', 'express_'];
+    const isFareRate = fareRateKeys.some(prefix => key.startsWith(prefix));
+    const finalCategory = isFareRate ? 'FareRates' : (category || 'General');
+
     return this.request<AppSettings>(`/api/admin/settings/${key}`, {
       method: 'PUT',
-      body: JSON.stringify({ value, description, category }),
+      body: JSON.stringify({ value, description, category: finalCategory }),
     });
   }
 
