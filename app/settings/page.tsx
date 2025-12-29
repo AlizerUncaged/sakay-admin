@@ -17,6 +17,37 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [changedKeys, setChangedKeys] = useState<Set<string>>(new Set());
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+
+  // Numeric setting keys that need validation
+  const numericKeys = [
+    'ride_baseFare', 'ride_perKm', 'ride_minFare',
+    'delivery_baseFare', 'delivery_perKm', 'delivery_minFare',
+    'cargo_baseFare', 'cargo_perKm', 'cargo_minFare',
+    'express_baseFare', 'express_perKm', 'express_minFare',
+  ];
+
+  const validateValue = (key: string, value: string): string | null => {
+    if (numericKeys.includes(key)) {
+      const num = parseFloat(value);
+      if (isNaN(num)) {
+        return 'Must be a valid number';
+      }
+      if (num < 0) {
+        return 'Must be a positive number';
+      }
+      if (num === 0) {
+        return 'Cannot be zero';
+      }
+    }
+    if (key === 'support_email' && value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        return 'Invalid email format';
+      }
+    }
+    return null;
+  };
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -47,6 +78,18 @@ export default function SettingsPage() {
   const handleChange = (key: string, value: string) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
 
+    // Validate the value
+    const validationError = validateValue(key, value);
+    setValidationErrors((prev) => {
+      const next = { ...prev };
+      if (validationError) {
+        next[key] = validationError;
+      } else {
+        delete next[key];
+      }
+      return next;
+    });
+
     // Track which settings have changed
     if (value !== originalSettings[key]) {
       setChangedKeys((prev) => new Set([...prev, key]));
@@ -59,8 +102,10 @@ export default function SettingsPage() {
     }
   };
 
+  const hasValidationErrors = Object.keys(validationErrors).length > 0;
+
   const handleSave = async () => {
-    if (changedKeys.size === 0) return;
+    if (changedKeys.size === 0 || hasValidationErrors) return;
 
     setSaving(true);
     setSaveSuccess(false);
@@ -88,6 +133,27 @@ export default function SettingsPage() {
   const getValue = (key: string, defaultValue = '') => settings[key] ?? defaultValue;
   const getBoolValue = (key: string, defaultValue = false) =>
     settings[key] === 'true' || (settings[key] === undefined && defaultValue);
+  const getError = (key: string) => validationErrors[key];
+
+  // Render a validated numeric input with error message
+  const renderFareInput = (key: string, label: string, defaultValue: string) => (
+    <div>
+      <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">{label}</label>
+      <input
+        type="number"
+        value={getValue(key, defaultValue)}
+        onChange={(e) => handleChange(key, e.target.value)}
+        className={`w-full px-3 py-2 bg-[var(--input-background)] border rounded-lg text-[var(--primary-text)] focus:outline-none text-sm ${
+          getError(key)
+            ? 'border-[var(--error-red)] focus:border-[var(--error-red)]'
+            : 'border-[var(--border-color)] focus:border-[var(--sakay-yellow)]'
+        }`}
+      />
+      {getError(key) && (
+        <p className="text-xs text-[var(--error-red)] mt-1">{getError(key)}</p>
+      )}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -138,7 +204,7 @@ export default function SettingsPage() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSave}
-          disabled={saving || changedKeys.size === 0}
+          disabled={saving || changedKeys.size === 0 || hasValidationErrors}
           className="flex items-center gap-2 px-4 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] font-semibold rounded-xl hover:bg-[var(--bright-yellow)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? (
@@ -150,6 +216,11 @@ export default function SettingsPage() {
             <>
               <Check size={18} />
               Saved!
+            </>
+          ) : hasValidationErrors ? (
+            <>
+              <AlertCircle size={18} />
+              Fix Errors
             </>
           ) : (
             <>
@@ -205,8 +276,15 @@ export default function SettingsPage() {
               type="email"
               value={getValue('support_email', 'support@sakay.com')}
               onChange={(e) => handleChange('support_email', e.target.value)}
-              className="w-full px-4 py-3 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
+              className={`w-full px-4 py-3 bg-[var(--input-background)] border rounded-xl text-[var(--primary-text)] focus:outline-none ${
+                getError('support_email')
+                  ? 'border-[var(--error-red)] focus:border-[var(--error-red)]'
+                  : 'border-[var(--border-color)] focus:border-[var(--sakay-yellow)]'
+              }`}
             />
+            {getError('support_email') && (
+              <p className="text-xs text-[var(--error-red)] mt-1">{getError('support_email')}</p>
+            )}
           </div>
         </div>
       </motion.div>
@@ -232,33 +310,9 @@ export default function SettingsPage() {
         <div className="mb-6 p-4 bg-[var(--elevated-surface)] rounded-xl">
           <h3 className="text-sm font-semibold text-[var(--sakay-yellow)] mb-4">🏍️ Ride Service</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('ride_baseFare', '40')}
-                onChange={(e) => handleChange('ride_baseFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
-              <input
-                type="number"
-                value={getValue('ride_perKm', '12')}
-                onChange={(e) => handleChange('ride_perKm', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('ride_minFare', '50')}
-                onChange={(e) => handleChange('ride_minFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
+            {renderFareInput('ride_baseFare', 'Base Fare (₱)', '40')}
+            {renderFareInput('ride_perKm', 'Per KM (₱)', '12')}
+            {renderFareInput('ride_minFare', 'Min Fare (₱)', '50')}
           </div>
         </div>
 
@@ -266,33 +320,9 @@ export default function SettingsPage() {
         <div className="mb-6 p-4 bg-[var(--elevated-surface)] rounded-xl">
           <h3 className="text-sm font-semibold text-[var(--info-blue)] mb-4">📦 Delivery Service</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('delivery_baseFare', '45')}
-                onChange={(e) => handleChange('delivery_baseFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
-              <input
-                type="number"
-                value={getValue('delivery_perKm', '15')}
-                onChange={(e) => handleChange('delivery_perKm', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('delivery_minFare', '60')}
-                onChange={(e) => handleChange('delivery_minFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
+            {renderFareInput('delivery_baseFare', 'Base Fare (₱)', '45')}
+            {renderFareInput('delivery_perKm', 'Per KM (₱)', '15')}
+            {renderFareInput('delivery_minFare', 'Min Fare (₱)', '60')}
           </div>
         </div>
 
@@ -300,33 +330,9 @@ export default function SettingsPage() {
         <div className="mb-6 p-4 bg-[var(--elevated-surface)] rounded-xl">
           <h3 className="text-sm font-semibold text-[var(--success-green)] mb-4">🚚 Cargo Service</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('cargo_baseFare', '80')}
-                onChange={(e) => handleChange('cargo_baseFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
-              <input
-                type="number"
-                value={getValue('cargo_perKm', '20')}
-                onChange={(e) => handleChange('cargo_perKm', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('cargo_minFare', '100')}
-                onChange={(e) => handleChange('cargo_minFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
+            {renderFareInput('cargo_baseFare', 'Base Fare (₱)', '80')}
+            {renderFareInput('cargo_perKm', 'Per KM (₱)', '20')}
+            {renderFareInput('cargo_minFare', 'Min Fare (₱)', '100')}
           </div>
         </div>
 
@@ -334,33 +340,9 @@ export default function SettingsPage() {
         <div className="p-4 bg-[var(--elevated-surface)] rounded-xl">
           <h3 className="text-sm font-semibold text-[var(--warning-orange)] mb-4">⚡ Express Service</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Base Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('express_baseFare', '60')}
-                onChange={(e) => handleChange('express_baseFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Per KM (₱)</label>
-              <input
-                type="number"
-                value={getValue('express_perKm', '18')}
-                onChange={(e) => handleChange('express_perKm', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--tertiary-text)] mb-1">Min Fare (₱)</label>
-              <input
-                type="number"
-                value={getValue('express_minFare', '80')}
-                onChange={(e) => handleChange('express_minFare', e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-lg text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)] text-sm"
-              />
-            </div>
+            {renderFareInput('express_baseFare', 'Base Fare (₱)', '60')}
+            {renderFareInput('express_perKm', 'Per KM (₱)', '18')}
+            {renderFareInput('express_minFare', 'Min Fare (₱)', '80')}
           </div>
         </div>
       </motion.div>

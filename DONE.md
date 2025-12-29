@@ -40,3 +40,7 @@
 - [x] **app/users/page.tsx**: Added Edit button in action menu
 - [x] **app/users/[id]/page.tsx**: Added Edit button on user profile page
 - [x] **app/drivers/[id]/page.tsx**: Added Edit button on driver profile page
+
+### UI/UX Improvements
+- [x] **app/drivers/page.tsx**: Simplified navigation - removed View modal button, changed "Manage" to "View Details"
+- [x] **app/settings/page.tsx**: Added input validation for fare settings (positive numbers, non-zero) and email validation

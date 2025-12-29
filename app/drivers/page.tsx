@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Star, Phone, CheckCircle, XCircle, Eye, Loader2, AlertCircle, RefreshCw, UserPlus, Settings, ExternalLink } from 'lucide-react';
+import { Search, Star, Phone, CheckCircle, XCircle, Eye, Loader2, AlertCircle, RefreshCw, UserPlus } from 'lucide-react';
 import { api, User, Motorcycle } from '@/lib/api';
-import { DriverDetailModal, AddDriverModal } from '@/components/modals';
+import { AddDriverModal } from '@/components/modals';
 
 interface DriverWithVehicle extends User {
   motorcycle?: Motorcycle;
@@ -19,8 +19,6 @@ export default function DriversPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'All' | 'Active' | 'Inactive'>('All');
-  const [selectedDriver, setSelectedDriver] = useState<DriverWithVehicle | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const fetchData = async () => {
@@ -283,29 +281,15 @@ export default function DriversPage() {
                   )}
 
                   {/* Actions */}
-                  <div className="flex gap-2">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        setSelectedDriver(driver);
-                        setIsDetailModalOpen(true);
-                      }}
-                      className="flex-1 py-2 bg-[var(--elevated-surface)] text-[var(--secondary-text)] rounded-xl hover:bg-[var(--input-background)] transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Eye size={16} />
-                      View
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => router.push(`/drivers/${driver.id}`)}
-                      className="flex-1 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-medium flex items-center justify-center gap-2"
-                    >
-                      <Settings size={16} />
-                      Manage
-                    </motion.button>
-                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => router.push(`/drivers/${driver.id}`)}
+                    className="w-full py-2.5 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <Eye size={16} />
+                    View Details
+                  </motion.button>
                 </motion.div>
               ))
             ) : (
@@ -316,13 +300,6 @@ export default function DriversPage() {
           </AnimatePresence>
         </motion.div>
       )}
-
-      {/* Driver Detail Modal */}
-      <DriverDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        driver={selectedDriver}
-      />
 
       {/* Add Driver Modal */}
       <AddDriverModal

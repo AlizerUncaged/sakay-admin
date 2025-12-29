@@ -50,7 +50,7 @@
 - [ ] Add ability to create Admin users
 
 ### Settings Page
-- [ ] Add input validation for settings (e.g., ensure ride_baseFare is positive number)
+- [x] Add input validation for settings (e.g., ensure ride_baseFare is positive number)
 - [ ] Add description for what each setting does
 
 ### Dashboard Page
@@ -71,7 +71,7 @@
 - [x] Either implement global search OR remove from layout (REMOVED)
 
 ### Driver Profile Navigation
-- [ ] Simplify: Remove View modal button, rename "Manage" to "View Details"
+- [x] Simplify: Remove View modal button, rename "Manage" to "View Details"
 
 ### Modal Closing Behavior
 - [x] **components/modals/AddDriverModal.tsx**: Disable backdrop onClick to prevent data loss
