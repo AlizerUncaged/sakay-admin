@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, User, Bike, Eye, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { api, Booking } from '@/lib/api';
 import { BookingDetailModal } from '@/components/modals';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -15,18 +16,27 @@ export default function BookingsPage() {
   const [filterType, setFilterType] = useState<'All' | 'Ride' | 'Delivery'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  const fetchBookings = async () => {
+  // Debounce search for server-side filtering
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const fetchBookings = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.getBookings(currentPage, 20, { status: filterStatus, bookingType: filterType });
+      const response = await api.getBookings(currentPage, 20, {
+        status: filterStatus,
+        bookingType: filterType,
+        search: debouncedSearch || undefined,
+      });
       if (response.success && response.data) {
         setBookings(response.data);
         if (response.pagination) {
           setTotalPages(response.pagination.totalPages);
+          setTotalItems(response.pagination.totalItems);
         }
       }
     } catch (err: unknown) {
@@ -35,22 +45,16 @@ export default function BookingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, filterStatus, filterType, debouncedSearch]);
 
   useEffect(() => {
     fetchBookings();
-  }, [currentPage, filterStatus, filterType]);
+  }, [fetchBookings]);
 
-  const filteredBookings = bookings.filter((booking) => {
-    const customerName = booking.customer ? `${booking.customer.firstName} ${booking.customer.lastName}`.toLowerCase() : '';
-    const riderName = booking.rider ? `${booking.rider.firstName} ${booking.rider.lastName}`.toLowerCase() : '';
-    const matchesSearch =
-      customerName.includes(searchQuery.toLowerCase()) ||
-      riderName.includes(searchQuery.toLowerCase()) ||
-      booking.id.toString().includes(searchQuery);
-    const matchesType = filterType === 'All' || booking.bookingType === filterType;
-    return matchesSearch && matchesType;
-  });
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, filterType, debouncedSearch]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -161,18 +165,18 @@ export default function BookingsPage() {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tertiary-text)]" />
             <input
               type="text"
-              placeholder="Search bookings..."
+              placeholder="Search by customer, driver, or ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] placeholder-[var(--placeholder-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
             />
+            {searchQuery && loading && (
+              <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[var(--tertiary-text)]" />
+            )}
           </div>
           <select
             value={filterStatus}
-            onChange={(e) => {
-              setFilterStatus(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
           >
             <option value="All">All Status</option>
@@ -229,9 +233,9 @@ export default function BookingsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-color)]">
-                <AnimatePresence>
-                  {filteredBookings.length > 0 ? (
-                    filteredBookings.map((booking, index) => (
+                <AnimatePresence mode="popLayout">
+                  {bookings.length > 0 ? (
+                    bookings.map((booking, index) => (
                       <motion.tr
                         key={booking.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -325,7 +329,7 @@ export default function BookingsPage() {
         className="flex items-center justify-between"
       >
         <p className="text-sm text-[var(--tertiary-text)]">
-          Showing {filteredBookings.length} bookings
+          Showing {bookings.length} of {totalItems} bookings
         </p>
         <div className="flex items-center gap-2">
           <motion.button

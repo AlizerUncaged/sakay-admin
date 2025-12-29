@@ -619,7 +619,7 @@ export function AddDriverModal({ isOpen, onClose, onSuccess }: AddDriverModalPro
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
+        // Disabled backdrop click to prevent accidental data loss - use X button to close
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}

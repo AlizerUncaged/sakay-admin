@@ -22,10 +22,12 @@ import {
   Activity,
 } from 'lucide-react';
 import { api, User, Booking } from '@/lib/api';
+import { useToast } from '@/components/common/Toast';
 
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { showError, showSuccess } = useToast();
   const userId = params.id as string;
 
   const [user, setUser] = useState<User | null>(null);
@@ -73,8 +75,9 @@ export default function UserProfilePage() {
     try {
       await api.updateUserStatus(user.id, !user.isActive);
       setUser({ ...user, isActive: !user.isActive });
+      showSuccess(`User ${user.isActive ? 'deactivated' : 'activated'} successfully`);
     } catch {
-      alert('Failed to update user status');
+      showError('Failed to update user status');
     } finally {
       setUpdating(false);
     }

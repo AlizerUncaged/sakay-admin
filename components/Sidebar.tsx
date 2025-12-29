@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  Activity,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -22,6 +23,7 @@ const menuItems = [
   { name: 'Drivers', href: '/drivers', icon: Bike },
   { name: 'Bookings', href: '/bookings', icon: CalendarCheck },
   { name: 'Reviews', href: '/reviews', icon: Star },
+  { name: 'Action Logs', href: '/action-logs', icon: Activity },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

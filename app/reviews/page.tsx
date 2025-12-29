@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, MessageSquare, Trash2, Flag, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { api, Review } from '@/lib/api';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useToast } from '@/components/common/Toast';
 
 export default function ReviewsPage() {
+  const { showError, showSuccess } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,16 +16,24 @@ export default function ReviewsPage() {
   const [filterRating, setFilterRating] = useState<string>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
-  const fetchReviews = async () => {
+  // Debounce search for server-side filtering
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const fetchReviews = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.getReviews(currentPage, 20);
+      const response = await api.getReviews(currentPage, 20, {
+        rating: filterRating !== 'All' ? parseInt(filterRating) : undefined,
+        search: debouncedSearch || undefined,
+      });
       if (response.success && response.data) {
         setReviews(response.data);
         if (response.pagination) {
           setTotalPages(response.pagination.totalPages);
+          setTotalItems(response.pagination.totalItems);
         }
       }
     } catch (err: unknown) {
@@ -31,22 +42,16 @@ export default function ReviewsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, filterRating, debouncedSearch]);
 
   useEffect(() => {
     fetchReviews();
-  }, [currentPage]);
+  }, [fetchReviews]);
 
-  const filteredReviews = reviews.filter((review) => {
-    const customerName = review.customer ? `${review.customer.firstName} ${review.customer.lastName}`.toLowerCase() : '';
-    const riderName = review.rider ? `${review.rider.firstName} ${review.rider.lastName}`.toLowerCase() : '';
-    const matchesSearch =
-      customerName.includes(searchQuery.toLowerCase()) ||
-      riderName.includes(searchQuery.toLowerCase()) ||
-      (review.comment || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRating = filterRating === 'All' || review.rating === parseInt(filterRating);
-    return matchesSearch && matchesRating;
-  });
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterRating, debouncedSearch]);
 
   const averageRating = reviews.length > 0
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
@@ -86,8 +91,9 @@ export default function ReviewsPage() {
     try {
       await api.deleteReview(reviewId);
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      showSuccess('Review deleted successfully');
     } catch (err) {
-      alert('Failed to delete review');
+      showError('Failed to delete review');
     }
   };
 
@@ -201,11 +207,14 @@ export default function ReviewsPage() {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tertiary-text)]" />
             <input
               type="text"
-              placeholder="Search reviews..."
+              placeholder="Search by customer, driver, or comment..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] placeholder-[var(--placeholder-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
             />
+            {searchQuery && loading && (
+              <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[var(--tertiary-text)]" />
+            )}
           </div>
           <select
             value={filterRating}
@@ -242,9 +251,9 @@ export default function ReviewsPage() {
           transition={{ delay: 0.4 }}
           className="space-y-4"
         >
-          <AnimatePresence>
-            {filteredReviews.length > 0 ? (
-              filteredReviews.map((review, index) => (
+          <AnimatePresence mode="popLayout">
+            {reviews.length > 0 ? (
+              reviews.map((review, index) => (
                 <motion.div
                   key={review.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -331,7 +340,7 @@ export default function ReviewsPage() {
       )}
 
       {/* Pagination */}
-      {filteredReviews.length > 0 && (
+      {reviews.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -339,7 +348,7 @@ export default function ReviewsPage() {
           className="flex items-center justify-between"
         >
           <p className="text-sm text-[var(--tertiary-text)]">
-            Showing {filteredReviews.length} reviews
+            Showing {reviews.length} of {totalItems} reviews
           </p>
           <div className="flex items-center gap-2">
             <motion.button

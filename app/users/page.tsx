@@ -6,19 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Mail, Phone, Star, CheckCircle, XCircle, MoreVertical, Loader2, AlertCircle, RefreshCw, UserX, UserCheck, Eye, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api, User } from '@/lib/api';
 import { UserDetailModal } from '@/components/modals';
-
-// Debounce hook for server-side search
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-  return debouncedValue;
-}
+import { useDebounce } from '@/hooks/useDebounce';
+import { useToast } from '@/components/common/Toast';
 
 export default function UsersPage() {
   const router = useRouter();
+  const { showError, showSuccess } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +66,9 @@ export default function UsersPage() {
       await api.updateUserStatus(user.id, !user.isActive);
       fetchUsers();
       setActionMenuOpen(null);
+      showSuccess(`User ${user.isActive ? 'deactivated' : 'activated'} successfully`);
     } catch {
-      alert('Failed to update user status');
+      showError('Failed to update user status');
     }
   };
 

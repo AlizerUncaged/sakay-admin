@@ -27,10 +27,12 @@ import {
   Wrench,
 } from 'lucide-react';
 import { api, Driver, Booking } from '@/lib/api';
+import { useToast } from '@/components/common/Toast';
 
 export default function DriverProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { showError, showSuccess } = useToast();
   const driverId = params.id as string;
 
   const [driver, setDriver] = useState<Driver | null>(null);
@@ -75,8 +77,9 @@ export default function DriverProfilePage() {
     try {
       await api.updateUserStatus(driver.id, !driver.isActive);
       setDriver({ ...driver, isActive: !driver.isActive });
+      showSuccess(`Driver ${driver.isActive ? 'deactivated' : 'activated'} successfully`);
     } catch {
-      alert('Failed to update driver status');
+      showError('Failed to update driver status');
     } finally {
       setUpdating(false);
     }
