@@ -25,9 +25,11 @@ import {
   Hash,
   DollarSign,
   Wrench,
+  Pencil,
 } from 'lucide-react';
 import { api, Driver, Booking } from '@/lib/api';
 import { useToast } from '@/components/common/Toast';
+import { EditDriverModal } from '@/components/modals';
 
 export default function DriverProfilePage() {
   const params = useParams();
@@ -40,6 +42,7 @@ export default function DriverProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -235,32 +238,46 @@ export default function DriverProfilePage() {
               </span>
             </div>
 
-            {/* Toggle Status Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleToggleStatus}
-              disabled={updating}
-              className={`w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${
-                driver.isActive
-                  ? 'bg-[var(--error-red)]/20 text-[var(--error-red)] hover:bg-[var(--error-red)]/30'
-                  : 'bg-[var(--success-green)]/20 text-[var(--success-green)] hover:bg-[var(--success-green)]/30'
-              }`}
-            >
-              {updating ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : driver.isActive ? (
-                <>
-                  <UserX size={18} />
-                  Deactivate Driver
-                </>
-              ) : (
-                <>
-                  <UserCheck size={18} />
-                  Activate Driver
-                </>
-              )}
-            </motion.button>
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Edit Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsEditModalOpen(true)}
+                className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors bg-[var(--sakay-yellow)] text-[var(--dark-background)] hover:bg-[var(--bright-yellow)]"
+              >
+                <Pencil size={18} />
+                Edit Driver
+              </motion.button>
+
+              {/* Toggle Status Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleToggleStatus}
+                disabled={updating}
+                className={`w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${
+                  driver.isActive
+                    ? 'bg-[var(--error-red)]/20 text-[var(--error-red)] hover:bg-[var(--error-red)]/30'
+                    : 'bg-[var(--success-green)]/20 text-[var(--success-green)] hover:bg-[var(--success-green)]/30'
+                }`}
+              >
+                {updating ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : driver.isActive ? (
+                  <>
+                    <UserX size={18} />
+                    Deactivate Driver
+                  </>
+                ) : (
+                  <>
+                    <UserCheck size={18} />
+                    Activate Driver
+                  </>
+                )}
+              </motion.button>
+            </div>
           </div>
         </motion.div>
 
@@ -431,6 +448,14 @@ export default function DriverProfilePage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Edit Driver Modal */}
+      <EditDriverModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        driver={driver}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }

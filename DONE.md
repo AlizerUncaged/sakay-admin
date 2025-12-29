@@ -30,3 +30,13 @@
 
 ### Bug Fixes
 - [x] **components/modals/AddDriverModal.tsx**: Disabled backdrop click to prevent accidental data loss
+
+### Edit User/Driver Functionality
+- [x] **Backend**: Added PUT /api/admin/users/{userId} endpoint for updating user details (firstName, lastName, email, phoneNumber)
+- [x] **Backend**: Added PUT /api/admin/drivers/{driverId}/vehicle endpoint for updating vehicle info
+- [x] **lib/api.ts**: Added updateUser and updateDriverVehicle API methods
+- [x] **components/modals/EditUserModal.tsx**: Created modal for editing user details with form validation
+- [x] **components/modals/EditDriverModal.tsx**: Created tabbed modal for editing driver personal info and vehicle info
+- [x] **app/users/page.tsx**: Added Edit button in action menu
+- [x] **app/users/[id]/page.tsx**: Added Edit button on user profile page
+- [x] **app/drivers/[id]/page.tsx**: Added Edit button on driver profile page

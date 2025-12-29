@@ -156,6 +156,13 @@ class ApiClient {
     });
   }
 
+  async updateUser(userId: string, data: { firstName?: string; lastName?: string; email?: string; phoneNumber?: string }) {
+    return this.request<User>(`/api/admin/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   async getUser(userId: string) {
     return this.request<User>(`/api/admin/users/${userId}`);
   }
@@ -163,6 +170,21 @@ class ApiClient {
   async getDriver(driverId: string) {
     // Get driver with vehicle info from dedicated endpoint
     return this.request<Driver>(`/api/admin/drivers/${driverId}`);
+  }
+
+  async updateDriverVehicle(driverId: string, data: {
+    maker?: string;
+    model?: string;
+    color?: string;
+    plateNumber?: string;
+    manufacturedYear?: string;
+    pricePerKm?: number;
+    status?: string;
+  }) {
+    return this.request<Vehicle>(`/api/admin/drivers/${driverId}/vehicle`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
   async registerDriver(formData: FormData) {

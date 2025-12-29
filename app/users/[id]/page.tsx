@@ -20,9 +20,11 @@ import {
   UserCheck,
   Shield,
   Activity,
+  Pencil,
 } from 'lucide-react';
 import { api, User, Booking } from '@/lib/api';
 import { useToast } from '@/components/common/Toast';
+import { EditUserModal } from '@/components/modals';
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -35,6 +37,7 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -219,32 +222,46 @@ export default function UserProfilePage() {
               </span>
             </div>
 
-            {/* Toggle Status Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleToggleStatus}
-              disabled={updating}
-              className={`w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${
-                user.isActive
-                  ? 'bg-[var(--error-red)]/20 text-[var(--error-red)] hover:bg-[var(--error-red)]/30'
-                  : 'bg-[var(--success-green)]/20 text-[var(--success-green)] hover:bg-[var(--success-green)]/30'
-              }`}
-            >
-              {updating ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : user.isActive ? (
-                <>
-                  <UserX size={18} />
-                  Deactivate User
-                </>
-              ) : (
-                <>
-                  <UserCheck size={18} />
-                  Activate User
-                </>
-              )}
-            </motion.button>
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Edit Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsEditModalOpen(true)}
+                className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors bg-[var(--sakay-yellow)] text-[var(--dark-background)] hover:bg-[var(--bright-yellow)]"
+              >
+                <Pencil size={18} />
+                Edit User
+              </motion.button>
+
+              {/* Toggle Status Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleToggleStatus}
+                disabled={updating}
+                className={`w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${
+                  user.isActive
+                    ? 'bg-[var(--error-red)]/20 text-[var(--error-red)] hover:bg-[var(--error-red)]/30'
+                    : 'bg-[var(--success-green)]/20 text-[var(--success-green)] hover:bg-[var(--success-green)]/30'
+                }`}
+              >
+                {updating ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : user.isActive ? (
+                  <>
+                    <UserX size={18} />
+                    Deactivate User
+                  </>
+                ) : (
+                  <>
+                    <UserCheck size={18} />
+                    Activate User
+                  </>
+                )}
+              </motion.button>
+            </div>
           </div>
         </motion.div>
 
@@ -357,6 +374,14 @@ export default function UserProfilePage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={user}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }

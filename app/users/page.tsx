@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Mail, Phone, Star, CheckCircle, XCircle, MoreVertical, Loader2, AlertCircle, RefreshCw, UserX, UserCheck, Eye, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Mail, Phone, Star, CheckCircle, XCircle, MoreVertical, Loader2, AlertCircle, RefreshCw, UserX, UserCheck, Eye, ExternalLink, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 import { api, User } from '@/lib/api';
-import { UserDetailModal } from '@/components/modals';
+import { UserDetailModal, EditUserModal } from '@/components/modals';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useToast } from '@/components/common/Toast';
 
@@ -24,6 +24,7 @@ export default function UsersPage() {
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Debounce search for server-side filtering
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -320,6 +321,17 @@ export default function UsersPage() {
                                     <span>View Full Profile</span>
                                   </button>
                                   <button
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setIsEditModalOpen(true);
+                                      setActionMenuOpen(null);
+                                    }}
+                                    className="w-full px-4 py-3 text-left text-sm hover:bg-[var(--elevated-surface)] transition-colors flex items-center gap-2 text-[var(--primary-text)]"
+                                  >
+                                    <Pencil size={16} />
+                                    <span>Edit User</span>
+                                  </button>
+                                  <button
                                     onClick={() => handleToggleUserStatus(user)}
                                     className="w-full px-4 py-3 text-left text-sm hover:bg-[var(--elevated-surface)] transition-colors flex items-center gap-2"
                                   >
@@ -398,6 +410,14 @@ export default function UsersPage() {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         user={selectedUser}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={selectedUser}
+        onSuccess={fetchUsers}
       />
     </div>
   );

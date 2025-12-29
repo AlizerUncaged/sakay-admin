@@ -44,8 +44,8 @@
 ## 4. Feature Completeness
 
 ### User/Driver Management
-- [ ] Add Edit functionality for users
-- [ ] Add Edit functionality for drivers
+- [x] Add Edit functionality for users
+- [x] Add Edit functionality for drivers
 - [ ] Add ability to create Customer users
 - [ ] Add ability to create Admin users
 
@@ -86,7 +86,7 @@
 
 ### CRITICAL
 1. [x] Fix data filtering (server-side) in bookings and reviews pages
-2. [ ] Implement Edit users/drivers functionality
+2. [x] Implement Edit users/drivers functionality
 
 ### HIGH
 3. [ ] Unify data fetching on drivers page
