@@ -19,6 +19,12 @@ export default function BookingsPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [stats, setStats] = useState<{ total: number; completed: number; pending: number; totalRevenue: number }>({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    totalRevenue: 0,
+  });
 
   // Debounce search for server-side filtering
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -37,6 +43,14 @@ export default function BookingsPage() {
         if (response.pagination) {
           setTotalPages(response.pagination.totalPages);
           setTotalItems(response.pagination.totalItems);
+        }
+        if (response.stats) {
+          setStats({
+            total: response.stats.total ?? 0,
+            completed: response.stats.completed ?? 0,
+            pending: response.stats.pending ?? 0,
+            totalRevenue: response.stats.totalRevenue ?? 0,
+          });
         }
       }
     } catch (err: unknown) {
@@ -84,13 +98,6 @@ export default function BookingsPage() {
     });
   };
 
-  // Stats
-  const stats = {
-    total: bookings.length,
-    completed: bookings.filter((b) => b.status === 'Completed').length,
-    pending: bookings.filter((b) => b.status === 'Pending').length,
-    totalRevenue: bookings.filter((b) => b.status === 'Completed').reduce((acc, b) => acc + (b.finalFare || b.estimatedFare || 0), 0),
-  };
 
   if (error) {
     return (
@@ -213,7 +220,7 @@ export default function BookingsPage() {
         transition={{ delay: 0.3 }}
         className="bg-[var(--card-background)] border border-[var(--border-color)] rounded-2xl overflow-hidden"
       >
-        {loading ? (
+        {loading && bookings.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={32} className="animate-spin text-[var(--sakay-yellow)]" />
           </div>

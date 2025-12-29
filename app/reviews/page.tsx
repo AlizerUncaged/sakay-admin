@@ -17,6 +17,23 @@ export default function ReviewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [stats, setStats] = useState<{
+    total: number;
+    averageRating: number;
+    rating5: number;
+    rating4: number;
+    rating3: number;
+    rating2: number;
+    rating1: number;
+  }>({
+    total: 0,
+    averageRating: 0,
+    rating5: 0,
+    rating4: 0,
+    rating3: 0,
+    rating2: 0,
+    rating1: 0,
+  });
 
   // Debounce search for server-side filtering
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -34,6 +51,17 @@ export default function ReviewsPage() {
         if (response.pagination) {
           setTotalPages(response.pagination.totalPages);
           setTotalItems(response.pagination.totalItems);
+        }
+        if (response.stats) {
+          setStats({
+            total: response.stats.total ?? 0,
+            averageRating: response.stats.averageRating ?? 0,
+            rating5: response.stats.rating5 ?? 0,
+            rating4: response.stats.rating4 ?? 0,
+            rating3: response.stats.rating3 ?? 0,
+            rating2: response.stats.rating2 ?? 0,
+            rating1: response.stats.rating1 ?? 0,
+          });
         }
       }
     } catch (err: unknown) {
@@ -53,15 +81,14 @@ export default function ReviewsPage() {
     setCurrentPage(1);
   }, [filterRating, debouncedSearch]);
 
-  const averageRating = reviews.length > 0
-    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-    : '0.0';
-
-  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
-    rating,
-    count: reviews.filter((r) => r.rating === rating).length,
-    percentage: reviews.length > 0 ? (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100 : 0,
-  }));
+  // Use backend stats for rating distribution
+  const ratingDistribution = [
+    { rating: 5, count: stats.rating5, percentage: stats.total > 0 ? (stats.rating5 / stats.total) * 100 : 0 },
+    { rating: 4, count: stats.rating4, percentage: stats.total > 0 ? (stats.rating4 / stats.total) * 100 : 0 },
+    { rating: 3, count: stats.rating3, percentage: stats.total > 0 ? (stats.rating3 / stats.total) * 100 : 0 },
+    { rating: 2, count: stats.rating2, percentage: stats.total > 0 ? (stats.rating2 / stats.total) * 100 : 0 },
+    { rating: 1, count: stats.rating1, percentage: stats.total > 0 ? (stats.rating1 / stats.total) * 100 : 0 },
+  ];
 
   const renderStars = (rating: number) => {
     return (
@@ -92,8 +119,9 @@ export default function ReviewsPage() {
       await api.deleteReview(reviewId);
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
       showSuccess('Review deleted successfully');
-    } catch (err) {
-      showError('Failed to delete review');
+    } catch (err: unknown) {
+      const error = err as { errors?: string[] };
+      showError(error.errors?.[0] || 'Failed to delete review');
     }
   };
 
@@ -150,12 +178,12 @@ export default function ReviewsPage() {
               transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
               className="text-5xl font-bold text-[var(--sakay-yellow)] mb-2"
             >
-              {averageRating}
+              {stats.averageRating.toFixed(1)}
             </motion.div>
             <div className="flex items-center justify-center gap-1 mb-2">
-              {renderStars(Math.round(parseFloat(averageRating)))}
+              {renderStars(Math.round(stats.averageRating))}
             </div>
-            <p className="text-[var(--tertiary-text)]">Based on {reviews.length} reviews</p>
+            <p className="text-[var(--tertiary-text)]">Based on {stats.total} reviews</p>
           </div>
         </motion.div>
 
@@ -240,7 +268,7 @@ export default function ReviewsPage() {
       </motion.div>
 
       {/* Reviews List */}
-      {loading ? (
+      {loading && reviews.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={32} className="animate-spin text-[var(--sakay-yellow)]" />
         </div>
@@ -340,7 +368,7 @@ export default function ReviewsPage() {
       )}
 
       {/* Pagination */}
-      {reviews.length > 0 && (
+      {totalPages > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

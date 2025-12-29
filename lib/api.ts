@@ -6,6 +6,7 @@ interface ApiResponse<T> {
   errors: string[];
   warnings: string[];
   pagination?: PaginationInfo;
+  stats?: Record<string, number>;
 }
 
 interface PaginationInfo {
@@ -110,8 +111,13 @@ class ApiClient {
     return this.request<DashboardStats>('/api/admin/stats');
   }
 
-  async getActionLogs(page = 1, pageSize = 20) {
-    return this.request<AdminActionLog[]>(`/api/admin/action-logs?page=${page}&pageSize=${pageSize}`);
+  async getActionLogs(page = 1, pageSize = 20, filters?: { search?: string }) {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+    });
+    if (filters?.search) params.append('search', filters.search);
+    return this.request<AdminActionLog[]>(`/api/admin/action-logs?${params.toString()}`);
   }
 
   async getSettings() {
@@ -185,6 +191,16 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify(data),
     });
+  }
+
+  async getDrivers(page = 1, pageSize = 20, filters?: { search?: string; isActive?: boolean }) {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+    });
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.isActive !== undefined) params.append('isActive', filters.isActive.toString());
+    return this.request<Driver[]>(`/api/admin/drivers?${params.toString()}`);
   }
 
   async registerDriver(formData: FormData) {

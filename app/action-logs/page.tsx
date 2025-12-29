@@ -33,7 +33,9 @@ export default function ActionLogsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.getActionLogs(currentPage, 50); // Fetch more per page for better client-side search
+      const response = await api.getActionLogs(currentPage, 20, {
+        search: debouncedSearch || undefined,
+      });
       if (response.success && response.data) {
         setLogs(response.data);
         if (response.pagination) {
@@ -47,17 +49,7 @@ export default function ActionLogsPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage]);
-
-  // Client-side filtering for current page (API doesn't support search)
-  const filteredLogs = debouncedSearch
-    ? logs.filter(
-        (log) =>
-          log.action.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          log.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          log.entityType.toLowerCase().includes(debouncedSearch.toLowerCase())
-      )
-    : logs;
+  }, [currentPage, debouncedSearch]);
 
   useEffect(() => {
     fetchLogs();
@@ -145,7 +137,7 @@ export default function ActionLogsPage() {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tertiary-text)]" />
             <input
               type="text"
-              placeholder="Filter current page by action, description, or entity..."
+              placeholder="Search by action, description, entity, or admin..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] placeholder-[var(--placeholder-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
@@ -191,8 +183,8 @@ export default function ActionLogsPage() {
               </thead>
               <tbody className="divide-y divide-[var(--border-color)]">
                 <AnimatePresence mode="popLayout">
-                  {filteredLogs.length > 0 ? (
-                    filteredLogs.map((log, index) => (
+                  {logs.length > 0 ? (
+                    logs.map((log, index) => (
                       <motion.tr
                         key={log.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -269,9 +261,7 @@ export default function ActionLogsPage() {
         className="flex items-center justify-between"
       >
         <p className="text-sm text-[var(--tertiary-text)]">
-          {debouncedSearch
-            ? `Showing ${filteredLogs.length} filtered (${logs.length} on page, ${totalItems} total)`
-            : `Showing ${logs.length} of ${totalItems} logs`}
+          Showing {logs.length} of {totalItems} logs
         </p>
         <div className="flex items-center gap-2">
           <motion.button

@@ -1,50 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Star, Phone, CheckCircle, XCircle, Eye, Loader2, AlertCircle, RefreshCw, UserPlus } from 'lucide-react';
-import { api, User, Motorcycle } from '@/lib/api';
+import { Search, Star, Phone, CheckCircle, XCircle, Eye, Loader2, AlertCircle, RefreshCw, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { api, Driver } from '@/lib/api';
 import { AddDriverModal } from '@/components/modals';
-
-interface DriverWithVehicle extends User {
-  motorcycle?: Motorcycle;
-}
+import { useDebounce } from '@/hooks/useDebounce';
+import { useToast } from '@/components/common/Toast';
 
 export default function DriversPage() {
   const router = useRouter();
-  const [drivers, setDrivers] = useState<DriverWithVehicle[]>([]);
-  const [motorcycles, setMotorcycles] = useState<Motorcycle[]>([]);
+  const { showSuccess } = useToast();
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'All' | 'Active' | 'Inactive'>('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const fetchData = async () => {
+  // Debounce search for server-side filtering
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const fetchDrivers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [ridersResponse, motorcyclesResponse] = await Promise.all([
-        api.getRiders(1, 50),
-        api.getMotorcycles(1, 50),
-      ]);
+      const response = await api.getDrivers(currentPage, 20, {
+        search: debouncedSearch || undefined,
+        isActive: filterStatus === 'All' ? undefined : filterStatus === 'Active',
+      });
 
-      if (ridersResponse.success && ridersResponse.data) {
-        // Map motorcycles to drivers
-        const motorcyclesByOwner = new Map<string, Motorcycle>();
-        if (motorcyclesResponse.success && motorcyclesResponse.data) {
-          motorcyclesResponse.data.forEach((m) => {
-            motorcyclesByOwner.set(m.ownerId, m);
-          });
-          setMotorcycles(motorcyclesResponse.data);
+      if (response.success && response.data) {
+        setDrivers(response.data);
+        if (response.pagination) {
+          setTotalPages(response.pagination.totalPages);
+          setTotalItems(response.pagination.totalItems);
         }
-
-        const driversWithVehicles = ridersResponse.data.map((driver) => ({
-          ...driver,
-          motorcycle: motorcyclesByOwner.get(driver.id),
-        }));
-        setDrivers(driversWithVehicles);
       }
     } catch (err: unknown) {
       const error = err as { errors?: string[] };
@@ -52,30 +47,22 @@ export default function DriversPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, debouncedSearch, filterStatus]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchDrivers();
+  }, [fetchDrivers]);
 
-  const filteredDrivers = drivers.filter((driver) => {
-    const fullName = `${driver.firstName} ${driver.lastName}`.toLowerCase();
-    const plateNumber = driver.motorcycle?.plateNumber?.toLowerCase() || '';
-    const matchesSearch =
-      fullName.includes(searchQuery.toLowerCase()) ||
-      driver.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      plateNumber.includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'All' || (filterStatus === 'Active' ? driver.isActive : !driver.isActive);
-    return matchesSearch && matchesStatus;
-  });
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, debouncedSearch]);
 
   const getStatusColor = (isActive: boolean) => {
     return isActive
       ? 'bg-[var(--success-green)]/20 text-[var(--success-green)]'
       : 'bg-[var(--tertiary-text)]/20 text-[var(--tertiary-text)]';
   };
-
-  const onlineCount = drivers.filter((d) => d.isActive).length;
 
   if (error) {
     return (
@@ -92,7 +79,7 @@ export default function DriversPage() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={fetchData}
+          onClick={fetchDrivers}
           className="flex items-center gap-2 px-4 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] font-semibold rounded-xl"
         >
           <RefreshCw size={18} />
@@ -121,9 +108,8 @@ export default function DriversPage() {
             transition={{ delay: 0.1 }}
             className="flex items-center gap-2 px-3 py-2 bg-[var(--elevated-surface)] rounded-xl"
           >
-            <div className="w-2 h-2 rounded-full bg-[var(--success-green)] animate-pulse" />
             <span className="text-sm text-[var(--secondary-text)]">
-              {onlineCount} Active
+              {totalItems} Total
             </span>
           </motion.div>
           <motion.button
@@ -150,11 +136,14 @@ export default function DriversPage() {
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tertiary-text)]" />
             <input
               type="text"
-              placeholder="Search drivers..."
+              placeholder="Search by name, email, or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-[var(--input-background)] border border-[var(--border-color)] rounded-xl text-[var(--primary-text)] placeholder-[var(--placeholder-text)] focus:outline-none focus:border-[var(--sakay-yellow)]"
             />
+            {searchQuery && loading && (
+              <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[var(--tertiary-text)]" />
+            )}
           </div>
           <select
             value={filterStatus}
@@ -168,7 +157,7 @@ export default function DriversPage() {
           <motion.button
             whileHover={{ rotate: 180 }}
             transition={{ duration: 0.3 }}
-            onClick={fetchData}
+            onClick={fetchDrivers}
             className="p-2 hover:bg-[var(--elevated-surface)] rounded-lg transition-colors"
           >
             <RefreshCw size={18} className="text-[var(--tertiary-text)]" />
@@ -177,7 +166,7 @@ export default function DriversPage() {
       </motion.div>
 
       {/* Driver Cards Grid */}
-      {loading ? (
+      {loading && drivers.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={32} className="animate-spin text-[var(--sakay-yellow)]" />
         </div>
@@ -189,8 +178,8 @@ export default function DriversPage() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           <AnimatePresence>
-            {filteredDrivers.length > 0 ? (
-              filteredDrivers.map((driver, index) => (
+            {drivers.length > 0 ? (
+              drivers.map((driver, index) => (
                 <motion.div
                   key={driver.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -240,12 +229,12 @@ export default function DriversPage() {
 
                   {/* Vehicle Info */}
                   <div className="bg-[var(--elevated-surface)] rounded-xl p-3 mb-4">
-                    {driver.motorcycle ? (
+                    {driver.vehicle ? (
                       <>
                         <p className="text-[var(--primary-text)] font-medium">
-                          {driver.motorcycle.brand} {driver.motorcycle.model}
+                          {driver.vehicle.maker} {driver.vehicle.model}
                         </p>
-                        <p className="text-sm text-[var(--tertiary-text)]">{driver.motorcycle.plateNumber}</p>
+                        <p className="text-sm text-[var(--tertiary-text)]">{driver.vehicle.plateNumber}</p>
                       </>
                     ) : (
                       <p className="text-[var(--tertiary-text)] text-sm">No vehicle registered</p>
@@ -294,20 +283,58 @@ export default function DriversPage() {
               ))
             ) : (
               <div className="col-span-full text-center py-12 text-[var(--tertiary-text)]">
-                No drivers found
+                {debouncedSearch ? `No drivers found matching "${debouncedSearch}"` : 'No drivers found'}
               </div>
             )}
           </AnimatePresence>
         </motion.div>
       )}
 
+      {/* Pagination */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="flex items-center justify-between"
+      >
+        <p className="text-sm text-[var(--tertiary-text)]">
+          Showing {drivers.length} of {totalItems} drivers
+        </p>
+        <div className="flex items-center gap-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1 px-4 py-2 bg-[var(--elevated-surface)] text-[var(--secondary-text)] rounded-xl hover:bg-[var(--input-background)] transition-colors disabled:opacity-50"
+          >
+            <ChevronLeft size={16} />
+            Previous
+          </motion.button>
+          <span className="px-4 py-2 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl font-medium">
+            {currentPage} / {totalPages || 1}
+          </span>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages}
+            className="flex items-center gap-1 px-4 py-2 bg-[var(--elevated-surface)] text-[var(--secondary-text)] rounded-xl hover:bg-[var(--input-background)] transition-colors disabled:opacity-50"
+          >
+            Next
+            <ChevronRight size={16} />
+          </motion.button>
+        </div>
+      </motion.div>
+
       {/* Add Driver Modal */}
       <AddDriverModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={() => {
-          fetchData();
+          fetchDrivers();
           setIsAddModalOpen(false);
+          showSuccess('Driver added successfully');
         }}
       />
     </div>
