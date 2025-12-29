@@ -26,18 +26,14 @@ import {
   DollarSign,
   Wrench,
 } from 'lucide-react';
-import { api, User, Motorcycle, Booking } from '@/lib/api';
-
-interface DriverWithVehicle extends User {
-  motorcycle?: Motorcycle;
-}
+import { api, Driver, Booking } from '@/lib/api';
 
 export default function DriverProfilePage() {
   const params = useParams();
   const router = useRouter();
   const driverId = params.id as string;
 
-  const [driver, setDriver] = useState<DriverWithVehicle | null>(null);
+  const [driver, setDriver] = useState<Driver | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +49,7 @@ export default function DriverProfilePage() {
       ]);
 
       if (driverResponse.success && driverResponse.data) {
-        setDriver(driverResponse.data as DriverWithVehicle);
+        setDriver(driverResponse.data);
       } else {
         setError('Driver not found');
       }
@@ -302,17 +298,17 @@ export default function DriverProfilePage() {
               <Bike size={20} className="text-[var(--sakay-yellow)]" />
               Vehicle Information
             </h3>
-            {driver.motorcycle ? (
+            {driver.vehicle ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-[var(--elevated-surface)] rounded-xl">
                   <div>
                     <p className="text-xl font-bold text-[var(--primary-text)]">
-                      {driver.motorcycle.brand} {driver.motorcycle.model}
+                      {driver.vehicle.maker} {driver.vehicle.model}
                     </p>
-                    <p className="text-[var(--tertiary-text)]">{driver.motorcycle.year}</p>
+                    <p className="text-[var(--tertiary-text)]">{driver.vehicle.manufacturedYear}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getVehicleStatusColor(driver.motorcycle.status)}`}>
-                    {driver.motorcycle.status}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getVehicleStatusColor(driver.vehicle.status)}`}>
+                    {driver.vehicle.status}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -320,28 +316,28 @@ export default function DriverProfilePage() {
                     <Hash size={16} className="text-[var(--tertiary-text)]" />
                     <div>
                       <p className="text-xs text-[var(--tertiary-text)]">Plate</p>
-                      <p className="text-[var(--primary-text)] font-medium text-sm">{driver.motorcycle.plateNumber}</p>
+                      <p className="text-[var(--primary-text)] font-medium text-sm">{driver.vehicle.plateNumber}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-3 bg-[var(--elevated-surface)] rounded-xl">
                     <Palette size={16} className="text-[var(--tertiary-text)]" />
                     <div>
                       <p className="text-xs text-[var(--tertiary-text)]">Color</p>
-                      <p className="text-[var(--primary-text)] font-medium text-sm">{driver.motorcycle.color}</p>
+                      <p className="text-[var(--primary-text)] font-medium text-sm">{driver.vehicle.color}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-3 bg-[var(--elevated-surface)] rounded-xl">
                     <DollarSign size={16} className="text-[var(--tertiary-text)]" />
                     <div>
                       <p className="text-xs text-[var(--tertiary-text)]">Price/km</p>
-                      <p className="text-[var(--primary-text)] font-medium text-sm">₱{driver.motorcycle.pricePerKm || 'N/A'}</p>
+                      <p className="text-[var(--primary-text)] font-medium text-sm">₱{driver.vehicle.pricePerKm || 'N/A'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-3 bg-[var(--elevated-surface)] rounded-xl">
                     <Car size={16} className="text-[var(--tertiary-text)]" />
                     <div>
                       <p className="text-xs text-[var(--tertiary-text)]">Year</p>
-                      <p className="text-[var(--primary-text)] font-medium text-sm">{driver.motorcycle.year}</p>
+                      <p className="text-[var(--primary-text)] font-medium text-sm">{driver.vehicle.manufacturedYear}</p>
                     </div>
                   </div>
                 </div>

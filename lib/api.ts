@@ -161,23 +161,8 @@ class ApiClient {
   }
 
   async getDriver(driverId: string) {
-    // Get driver with motorcycle info
-    const [userResponse, motorcyclesResponse] = await Promise.all([
-      this.request<User>(`/api/admin/users/${driverId}`),
-      this.getMotorcycles(1, 100),
-    ]);
-
-    if (userResponse.success && userResponse.data) {
-      const motorcycle = motorcyclesResponse.data?.find(m => m.ownerId === driverId);
-      return {
-        ...userResponse,
-        data: {
-          ...userResponse.data,
-          motorcycle,
-        },
-      };
-    }
-    return userResponse;
+    // Get driver with vehicle info from dedicated endpoint
+    return this.request<Driver>(`/api/admin/drivers/${driverId}`);
   }
 
   async registerDriver(formData: FormData) {
@@ -284,6 +269,50 @@ export interface User {
   rating?: number;
   totalRides?: number;
   createdAt: string;
+}
+
+export interface RiderData {
+  id: number;
+  serviceRegion: string;
+  vehicleType: string;
+  timeAllocation: string;
+  licenseLevel: string;
+  licenseNumber: string;
+  licenseExpiryDate: string;
+  verificationStatus: string;
+  isVerified: boolean;
+}
+
+export interface Vehicle {
+  id: number;
+  riderDataId: number;
+  vehicleType: string;
+  plateNumber: string;
+  maker: string;
+  model: string;
+  color: string;
+  manufacturedYear: string;
+  chassisNumber: string;
+  engineNumber: string;
+  transmissionType: string;
+  orPhotoUrl?: string;
+  crPhotoUrl?: string;
+  frontPhotoUrl?: string;
+  backPhotoUrl?: string;
+  sidePhotoUrl?: string;
+  ownershipType: string;
+  description?: string;
+  status: string;
+  pricePerHour?: number;
+  pricePerKm?: number;
+  isVerified: boolean;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface Driver extends User {
+  riderData?: RiderData;
+  vehicle?: Vehicle;
 }
 
 export interface UserSummary {
