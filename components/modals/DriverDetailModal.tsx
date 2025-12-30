@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Star, CheckCircle, XCircle, Calendar, Bike, MapPin, ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 import { Modal } from '../common/Modal';
 import { User, Motorcycle } from '@/lib/api';
 
@@ -36,9 +37,20 @@ export function DriverDetailModal({ isOpen, onClose, driver, motorcycle }: Drive
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
-            className="w-20 h-20 rounded-full bg-[var(--sakay-yellow)] flex items-center justify-center text-[var(--dark-background)] font-bold text-3xl"
+            className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0"
           >
-            {driver.firstName?.charAt(0) || '?'}
+            {driver.profileImageUrl ? (
+              <Image
+                src={driver.profileImageUrl.startsWith('http') ? driver.profileImageUrl : `https://sakay.to${driver.profileImageUrl}`}
+                alt={`${driver.firstName} ${driver.lastName}`}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-20 h-20 bg-[var(--sakay-yellow)] flex items-center justify-center text-[var(--dark-background)] font-bold text-3xl">
+                {driver.firstName?.charAt(0) || '?'}
+              </div>
+            )}
           </motion.div>
           <div className="flex-1">
             <div className="flex items-center gap-2">

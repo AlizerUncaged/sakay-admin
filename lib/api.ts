@@ -104,6 +104,35 @@ class ApiClient {
     return this.request<User>('/api/auth/profile');
   }
 
+  async uploadProfilePicture(file: File): Promise<ApiResponse<{ fileUrl: string }>> {
+    const token = this.getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/api/file/profile-picture`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        errors: data.errors || ['Upload failed'],
+      };
+    }
+    return data;
+  }
+
+  async updateProfile(data: { profileImageUrl?: string; firstName?: string; lastName?: string; phoneNumber?: string }) {
+    return this.request<User>('/api/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   // ============================================
   // Admin Dashboard endpoints (all use /api/admin/*)
   // ============================================
@@ -162,7 +191,7 @@ class ApiClient {
     });
   }
 
-  async updateUser(userId: string, data: { firstName?: string; lastName?: string; email?: string; phoneNumber?: string }) {
+  async updateUser(userId: string, data: { firstName?: string; lastName?: string; email?: string; phoneNumber?: string; profileImageUrl?: string }) {
     return this.request<User>(`/api/admin/users/${userId}`, {
       method: 'PUT',
       body: JSON.stringify(data),

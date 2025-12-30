@@ -26,7 +26,9 @@ import {
   DollarSign,
   Wrench,
   Pencil,
+  Camera,
 } from 'lucide-react';
+import Image from 'next/image';
 import { api, Driver, Booking } from '@/lib/api';
 import { useToast } from '@/components/common/Toast';
 import { EditDriverModal } from '@/components/modals';
@@ -43,6 +45,37 @@ export default function DriverProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [uploadingPicture, setUploadingPicture] = useState(false);
+
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !driver) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      showError('Image must be less than 2MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      showError('Please select a valid image file');
+      return;
+    }
+
+    setUploadingPicture(true);
+    try {
+      const uploadResponse = await api.uploadProfilePicture(file);
+      if (uploadResponse.success && uploadResponse.data?.fileUrl) {
+        await api.updateUser(driver.id, { profileImageUrl: uploadResponse.data.fileUrl });
+        setDriver({ ...driver, profileImageUrl: uploadResponse.data.fileUrl });
+        showSuccess('Profile picture updated successfully');
+      }
+    } catch (err: unknown) {
+      const error = err as { errors?: string[] };
+      showError(error.errors?.[0] || 'Failed to upload profile picture');
+    } finally {
+      setUploadingPicture(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -198,13 +231,35 @@ export default function DriverProfilePage() {
           className="lg:col-span-1 bg-[var(--card-background)] border border-[var(--border-color)] rounded-2xl p-6"
         >
           <div className="text-center">
-            {/* Avatar */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="w-24 h-24 mx-auto rounded-full bg-[var(--sakay-yellow)] flex items-center justify-center text-4xl font-bold text-[var(--dark-background)] mb-4"
-            >
-              {driver.firstName?.charAt(0) || '?'}
-            </motion.div>
+            {/* Avatar with Upload */}
+            <div className="relative w-24 h-24 mx-auto mb-4 group">
+              {driver.profileImageUrl ? (
+                <Image
+                  src={driver.profileImageUrl.startsWith('http') ? driver.profileImageUrl : `https://sakay.to${driver.profileImageUrl}`}
+                  alt={`${driver.firstName} ${driver.lastName}`}
+                  fill
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-[var(--sakay-yellow)] flex items-center justify-center text-4xl font-bold text-[var(--dark-background)]">
+                  {driver.firstName?.charAt(0) || '?'}
+                </div>
+              )}
+              <label className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureUpload}
+                  className="hidden"
+                  disabled={uploadingPicture}
+                />
+                {uploadingPicture ? (
+                  <Loader2 size={24} className="text-white animate-spin" />
+                ) : (
+                  <Camera size={24} className="text-white" />
+                )}
+              </label>
+            </div>
 
             {/* Name & Verification */}
             <div className="flex items-center justify-center gap-2 mb-1">

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { MapPin, User, Bike, Clock, DollarSign, Route, Calendar, ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 import { Modal } from '../common/Modal';
 import { Booking } from '@/lib/api';
 
@@ -115,8 +116,19 @@ export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailMo
               )}
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[var(--info-blue)] flex items-center justify-center text-white font-bold">
-                {booking.customer?.firstName?.charAt(0) || '?'}
+              <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                {booking.customer?.profileImageUrl ? (
+                  <Image
+                    src={booking.customer.profileImageUrl.startsWith('http') ? booking.customer.profileImageUrl : `https://sakay.to${booking.customer.profileImageUrl}`}
+                    alt={`${booking.customer.firstName} ${booking.customer.lastName}`}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-[var(--info-blue)] flex items-center justify-center text-white font-bold">
+                    {booking.customer?.firstName?.charAt(0) || '?'}
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-[var(--primary-text)] font-medium">
@@ -147,8 +159,19 @@ export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailMo
             </div>
             {booking.rider ? (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--sakay-yellow)] flex items-center justify-center text-[var(--dark-background)] font-bold">
-                  {booking.rider.firstName?.charAt(0) || '?'}
+                <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  {booking.rider.profileImageUrl ? (
+                    <Image
+                      src={booking.rider.profileImageUrl.startsWith('http') ? booking.rider.profileImageUrl : `https://sakay.to${booking.rider.profileImageUrl}`}
+                      alt={`${booking.rider.firstName} ${booking.rider.lastName}`}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-[var(--sakay-yellow)] flex items-center justify-center text-[var(--dark-background)] font-bold">
+                      {booking.rider.firstName?.charAt(0) || '?'}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="text-[var(--primary-text)] font-medium">
