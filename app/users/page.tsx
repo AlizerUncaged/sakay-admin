@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Mail, Phone, Star, CheckCircle, XCircle, MoreVertical, Loader2, AlertCircle, RefreshCw, UserX, UserCheck, Eye, ExternalLink, ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
+import Image from 'next/image';
 import { api, User } from '@/lib/api';
 import { UserDetailModal, EditUserModal } from '@/components/modals';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -227,9 +228,20 @@ export default function UsersPage() {
                           <div className="flex items-center gap-3">
                             <motion.div
                               whileHover={{ scale: 1.1 }}
-                              className="w-10 h-10 rounded-full bg-[var(--sakay-yellow)] flex items-center justify-center text-[var(--dark-background)] font-bold"
+                              className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
                             >
-                              {user.firstName?.charAt(0) || '?'}
+                              {user.profileImageUrl ? (
+                                <Image
+                                  src={user.profileImageUrl.startsWith('http') ? user.profileImageUrl : `https://sakay.to${user.profileImageUrl}`}
+                                  alt={`${user.firstName} ${user.lastName}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-[var(--sakay-yellow)] flex items-center justify-center text-[var(--dark-background)] font-bold">
+                                  {user.firstName?.charAt(0) || '?'}
+                                </div>
+                              )}
                             </motion.div>
                             <div>
                               <div className="flex items-center gap-2">
