@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, Phone, CheckCircle, XCircle, Eye, Loader2, AlertCircle, RefreshCw, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api, Driver } from '@/lib/api';
-import { AddDriverModal } from '@/components/modals';
+import { AddDriverModal, DriverDetailModal } from '@/components/modals';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useToast } from '@/components/common/Toast';
 
@@ -21,6 +21,8 @@ export default function DriversPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Debounce search for server-side filtering
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -187,7 +189,11 @@ export default function DriversPage() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                  className="bg-[var(--card-background)] border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--sakay-yellow)] transition-colors"
+                  className="bg-[var(--card-background)] border border-[var(--border-color)] rounded-2xl p-6 hover:border-[var(--sakay-yellow)] transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedDriver(driver);
+                    setIsDetailModalOpen(true);
+                  }}
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
@@ -273,11 +279,14 @@ export default function DriversPage() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => router.push(`/drivers/${driver.id}`)}
-                    className="w-full py-2.5 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-medium flex items-center justify-center gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/drivers/${driver.id}`);
+                    }}
+                    className="w-full py-2.5 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-medium flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Eye size={16} />
-                    View Details
+                    View Full Profile
                   </motion.button>
                 </motion.div>
               ))
@@ -336,6 +345,14 @@ export default function DriversPage() {
           setIsAddModalOpen(false);
           showSuccess('Driver added successfully');
         }}
+      />
+
+      {/* Driver Detail Modal */}
+      <DriverDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        driver={selectedDriver}
+        motorcycle={selectedDriver?.vehicle}
       />
     </div>
   );

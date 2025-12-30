@@ -1,7 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { MapPin, User, Bike, Clock, DollarSign, Route, Calendar } from 'lucide-react';
+import { MapPin, User, Bike, Clock, DollarSign, Route, Calendar, ExternalLink } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { Booking } from '@/lib/api';
 
@@ -12,6 +13,8 @@ interface BookingDetailModalProps {
 }
 
 export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailModalProps) {
+  const router = useRouter();
+
   if (!booking) return null;
 
   const formatDate = (dateString: string) => {
@@ -97,9 +100,20 @@ export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailMo
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-[var(--elevated-surface)] rounded-xl p-4"
+            className={`bg-[var(--elevated-surface)] rounded-xl p-4 ${booking.customer?.id ? 'cursor-pointer hover:bg-[var(--input-background)] transition-colors' : ''}`}
+            onClick={() => {
+              if (booking.customer?.id) {
+                onClose();
+                router.push(`/users/${booking.customer.id}`);
+              }
+            }}
           >
-            <h4 className="text-sm font-medium text-[var(--tertiary-text)] uppercase tracking-wide mb-3">Customer</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-[var(--tertiary-text)] uppercase tracking-wide">Customer</h4>
+              {booking.customer?.id && (
+                <ExternalLink size={14} className="text-[var(--tertiary-text)]" />
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[var(--info-blue)] flex items-center justify-center text-white font-bold">
                 {booking.customer?.firstName?.charAt(0) || '?'}
@@ -117,9 +131,20 @@ export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailMo
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-[var(--elevated-surface)] rounded-xl p-4"
+            className={`bg-[var(--elevated-surface)] rounded-xl p-4 ${booking.rider?.id ? 'cursor-pointer hover:bg-[var(--input-background)] transition-colors' : ''}`}
+            onClick={() => {
+              if (booking.rider?.id) {
+                onClose();
+                router.push(`/drivers/${booking.rider.id}`);
+              }
+            }}
           >
-            <h4 className="text-sm font-medium text-[var(--tertiary-text)] uppercase tracking-wide mb-3">Driver</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-[var(--tertiary-text)] uppercase tracking-wide">Driver</h4>
+              {booking.rider?.id && (
+                <ExternalLink size={14} className="text-[var(--tertiary-text)]" />
+              )}
+            </div>
             {booking.rider ? (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[var(--sakay-yellow)] flex items-center justify-center text-[var(--dark-background)] font-bold">

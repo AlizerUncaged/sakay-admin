@@ -1,7 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Phone, Star, CheckCircle, XCircle, Calendar, MapPin, Bike } from 'lucide-react';
+import { Mail, Phone, Star, CheckCircle, XCircle, Calendar, MapPin, Bike, ExternalLink } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { User } from '@/lib/api';
 
@@ -12,6 +13,8 @@ interface UserDetailModalProps {
 }
 
 export function UserDetailModal({ isOpen, onClose, user }: UserDetailModalProps) {
+  const router = useRouter();
+
   if (!user) return null;
 
   const formatDate = (dateString: string) => {
@@ -136,6 +139,23 @@ export function UserDetailModal({ isOpen, onClose, user }: UserDetailModalProps)
             <p className="text-sm text-[var(--primary-text)]">{formatDate(user.createdAt)}</p>
           </motion.div>
         </div>
+
+        {/* View Full Profile Button */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => {
+            onClose();
+            router.push(`/users/${user.id}`);
+          }}
+          className="w-full py-3 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-semibold flex items-center justify-center gap-2"
+        >
+          <ExternalLink size={18} />
+          View Full Profile
+        </motion.button>
       </div>
     </Modal>
   );

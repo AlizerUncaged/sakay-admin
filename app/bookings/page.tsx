@@ -249,7 +249,11 @@ export default function BookingsPage() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="hover:bg-[var(--elevated-surface)] transition-colors"
+                        className="hover:bg-[var(--elevated-surface)] transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setIsDetailModalOpen(true);
+                        }}
                       >
                         <td className="px-6 py-4 text-[var(--primary-text)] font-medium">#{booking.id}</td>
                         <td className="px-6 py-4">
@@ -303,7 +307,8 @@ export default function BookingsPage() {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedBooking(booking);
                               setIsDetailModalOpen(true);
                             }}

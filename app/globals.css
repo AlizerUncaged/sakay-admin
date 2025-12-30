@@ -79,7 +79,14 @@ body {
   outline-offset: 2px;
 }
 
-/* Button animations */
+/* Button and interactive element styles */
+button,
+a,
+[role="button"],
+select {
+  cursor: pointer;
+}
+
 button {
   transition: all 0.2s ease;
 }

@@ -217,7 +217,11 @@ export default function UsersPage() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="hover:bg-[var(--elevated-surface)] transition-colors"
+                        className="hover:bg-[var(--elevated-surface)] transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsDetailModalOpen(true);
+                        }}
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
@@ -284,7 +288,8 @@ export default function UsersPage() {
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setSelectedUser(user);
                                 setIsDetailModalOpen(true);
                               }}
@@ -296,7 +301,10 @@ export default function UsersPage() {
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
-                              onClick={() => setActionMenuOpen(actionMenuOpen === user.id ? null : user.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActionMenuOpen(actionMenuOpen === user.id ? null : user.id);
+                              }}
                               className="p-2 hover:bg-[var(--elevated-surface)] rounded-lg transition-colors"
                             >
                               <MoreVertical size={18} className="text-[var(--tertiary-text)]" />
@@ -311,7 +319,8 @@ export default function UsersPage() {
                                   className="absolute right-0 top-full mt-1 w-48 bg-[var(--card-background)] border border-[var(--border-color)] rounded-xl shadow-lg z-10 overflow-hidden"
                                 >
                                   <button
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       router.push(`/users/${user.id}`);
                                       setActionMenuOpen(null);
                                     }}
@@ -321,7 +330,8 @@ export default function UsersPage() {
                                     <span>View Full Profile</span>
                                   </button>
                                   <button
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       setSelectedUser(user);
                                       setIsEditModalOpen(true);
                                       setActionMenuOpen(null);
@@ -332,7 +342,10 @@ export default function UsersPage() {
                                     <span>Edit User</span>
                                   </button>
                                   <button
-                                    onClick={() => handleToggleUserStatus(user)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggleUserStatus(user);
+                                    }}
                                     className="w-full px-4 py-3 text-left text-sm hover:bg-[var(--elevated-surface)] transition-colors flex items-center gap-2"
                                   >
                                     {user.isActive ? (

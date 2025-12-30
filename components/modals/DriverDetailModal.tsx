@@ -1,7 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Phone, Star, CheckCircle, XCircle, Calendar, Bike, MapPin } from 'lucide-react';
+import { Mail, Phone, Star, CheckCircle, XCircle, Calendar, Bike, MapPin, ExternalLink } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { User, Motorcycle } from '@/lib/api';
 
@@ -13,6 +14,8 @@ interface DriverDetailModalProps {
 }
 
 export function DriverDetailModal({ isOpen, onClose, driver, motorcycle }: DriverDetailModalProps) {
+  const router = useRouter();
+
   if (!driver) return null;
 
   const formatDate = (dateString: string) => {
@@ -181,6 +184,23 @@ export function DriverDetailModal({ isOpen, onClose, driver, motorcycle }: Drive
             <p className="text-xs text-[var(--tertiary-text)]">Member Since</p>
           </motion.div>
         </div>
+
+        {/* View Full Profile Button */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => {
+            onClose();
+            router.push(`/drivers/${driver.id}`);
+          }}
+          className="w-full py-3 bg-[var(--sakay-yellow)] text-[var(--dark-background)] rounded-xl hover:bg-[var(--bright-yellow)] transition-colors font-semibold flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <ExternalLink size={18} />
+          View Full Profile
+        </motion.button>
       </div>
     </Modal>
   );
