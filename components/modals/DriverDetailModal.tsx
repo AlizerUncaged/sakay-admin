@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 import { Mail, Phone, Star, CheckCircle, XCircle, Calendar, Bike, MapPin, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import { Modal } from '../common/Modal';
-import { User, Motorcycle } from '@/lib/api';
+import { User, Vehicle } from '@/lib/api';
 
 interface DriverDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   driver: User | null;
-  motorcycle?: Motorcycle | null;
+  motorcycle?: Vehicle | null;
 }
 
 export function DriverDetailModal({ isOpen, onClose, driver, motorcycle }: DriverDetailModalProps) {
@@ -126,7 +126,7 @@ export function DriverDetailModal({ isOpen, onClose, driver, motorcycle }: Drive
               <div className="flex-1 grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-[var(--tertiary-text)]">Brand & Model</p>
-                  <p className="text-[var(--primary-text)] font-medium">{motorcycle.brand} {motorcycle.model}</p>
+                  <p className="text-[var(--primary-text)] font-medium">{motorcycle.maker} {motorcycle.model}</p>
                 </div>
                 <div>
                   <p className="text-xs text-[var(--tertiary-text)]">Plate Number</p>
@@ -134,7 +134,7 @@ export function DriverDetailModal({ isOpen, onClose, driver, motorcycle }: Drive
                 </div>
                 <div>
                   <p className="text-xs text-[var(--tertiary-text)]">Year</p>
-                  <p className="text-[var(--primary-text)]">{motorcycle.year}</p>
+                  <p className="text-[var(--primary-text)]">{motorcycle.manufacturedYear}</p>
                 </div>
                 <div>
                   <p className="text-xs text-[var(--tertiary-text)]">Color</p>
