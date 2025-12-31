@@ -46,6 +46,7 @@ export default function DriverProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [uploadingPicture, setUploadingPicture] = useState(false);
+  const [updatingVehicleStatus, setUpdatingVehicleStatus] = useState(false);
 
   const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -118,6 +119,23 @@ export default function DriverProfilePage() {
       showError('Failed to update driver status');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleVehicleStatusChange = async (newStatus: string) => {
+    if (!driver || !driver.vehicle) return;
+    setUpdatingVehicleStatus(true);
+    try {
+      await api.updateDriverVehicle(driver.id, { status: newStatus });
+      setDriver({
+        ...driver,
+        vehicle: { ...driver.vehicle, status: newStatus }
+      });
+      showSuccess(`Vehicle status updated to ${newStatus}`);
+    } catch {
+      showError('Failed to update vehicle status');
+    } finally {
+      setUpdatingVehicleStatus(false);
     }
   };
 
@@ -382,9 +400,22 @@ export default function DriverProfilePage() {
                     </p>
                     <p className="text-[var(--tertiary-text)]">{driver.vehicle.manufacturedYear}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getVehicleStatusColor(driver.vehicle.status)}`}>
-                    {driver.vehicle.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={driver.vehicle.status}
+                      onChange={(e) => handleVehicleStatusChange(e.target.value)}
+                      disabled={updatingVehicleStatus}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer border-0 outline-none ${getVehicleStatusColor(driver.vehicle.status)} ${updatingVehicleStatus ? 'opacity-50' : ''}`}
+                      style={{ backgroundColor: 'var(--elevated-surface)' }}
+                    >
+                      <option value="Available">Available</option>
+                      <option value="Booked">Booked</option>
+                      <option value="Maintenance">Maintenance</option>
+                      <option value="Inactive">Inactive</option>
+                      <option value="Pending">Pending</option>
+                    </select>
+                    {updatingVehicleStatus && <Loader2 size={16} className="animate-spin text-[var(--sakay-yellow)]" />}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="flex items-center gap-2 p-3 bg-[var(--elevated-surface)] rounded-xl">

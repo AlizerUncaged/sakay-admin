@@ -317,6 +317,40 @@ class ApiClient {
     }
     return this.request<User[]>(`/api/admin/users?${params.toString()}`);
   }
+
+  // ============================================
+  // Admin Vehicles endpoints
+  // ============================================
+  async getVehicles(page = 1, pageSize = 20, filters?: { search?: string; status?: string }) {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('pageSize', pageSize.toString());
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
+    if (filters?.status && filters.status !== 'All') {
+      params.append('status', filters.status);
+    }
+    return this.request<AdminVehicle[]>(`/api/admin/vehicles?${params.toString()}`);
+  }
+
+  async getVehicle(vehicleId: number) {
+    return this.request<AdminVehicle>(`/api/admin/vehicles/${vehicleId}`);
+  }
+
+  async updateVehicle(vehicleId: number, data: {
+    status?: string;
+    maker?: string;
+    model?: string;
+    color?: string;
+    plateNumber?: string;
+    isActive?: boolean;
+  }) {
+    return this.request<AdminVehicle>(`/api/admin/vehicles/${vehicleId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // ============================================
@@ -380,6 +414,31 @@ export interface Vehicle {
 export interface Driver extends User {
   riderData?: RiderData;
   vehicle?: Vehicle;
+}
+
+export interface AdminVehicle {
+  id: number;
+  ownerId: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerProfileImageUrl?: string;
+  vehicleType: string;
+  plateNumber: string;
+  maker: string;
+  model: string;
+  color: string;
+  manufacturedYear: string;
+  description?: string;
+  chassisNumber?: string;
+  engineNumber?: string;
+  transmissionType?: string;
+  ownershipType?: string;
+  status: string;
+  pricePerHour?: number;
+  pricePerKm?: number;
+  isVerified: boolean;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface UserSummary {
