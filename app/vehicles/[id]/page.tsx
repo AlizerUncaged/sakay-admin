@@ -18,10 +18,12 @@ import {
   Loader2,
   AlertCircle,
   RefreshCw,
+  Edit,
 } from 'lucide-react';
 import Image from 'next/image';
 import { api, AdminVehicle } from '@/lib/api';
 import { useToast } from '@/components/common/Toast';
+import { EditVehicleModal } from '@/components/modals';
 
 export default function VehicleProfilePage() {
   const params = useParams();
@@ -33,6 +35,7 @@ export default function VehicleProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const fetchVehicle = async () => {
     setLoading(true);
@@ -219,16 +222,27 @@ export default function VehicleProfilePage() {
               </div>
             </div>
 
-            {/* View Owner Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => router.push(`/drivers/${vehicle.ownerId}`)}
-              className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors bg-[var(--sakay-yellow)] text-[var(--dark-background)] hover:bg-[var(--bright-yellow)]"
-            >
-              <User size={18} />
-              View Owner Profile
-            </motion.button>
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowEditModal(true)}
+                className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors bg-[var(--sakay-yellow)] text-[var(--dark-background)] hover:bg-[var(--bright-yellow)]"
+              >
+                <Edit size={18} />
+                Edit Vehicle
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push(`/drivers/${vehicle.ownerId}`)}
+                className="w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors bg-[var(--elevated-surface)] text-[var(--primary-text)] hover:bg-[var(--input-background)]"
+              >
+                <User size={18} />
+                View Owner Profile
+              </motion.button>
+            </div>
           </div>
         </motion.div>
 
@@ -377,6 +391,14 @@ export default function VehicleProfilePage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Edit Vehicle Modal */}
+      <EditVehicleModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        vehicle={vehicle}
+        onSuccess={fetchVehicle}
+      />
     </div>
   );
 }

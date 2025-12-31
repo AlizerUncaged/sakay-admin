@@ -344,7 +344,11 @@ class ApiClient {
     model?: string;
     color?: string;
     plateNumber?: string;
+    manufacturedYear?: string;
+    pricePerKm?: number;
+    pricePerHour?: number;
     isActive?: boolean;
+    isVerified?: boolean;
   }) {
     return this.request<AdminVehicle>(`/api/admin/vehicles/${vehicleId}`, {
       method: 'PUT',
